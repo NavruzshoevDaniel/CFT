@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+    <Properties>
+        <Property name="layout">%highlight{%d [%t] %-5level %C %M - %m%n}</Property>
+        <Property name="LOG_DIR">src/main/resources/</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout pattern="${layout}"/>
+        </Console>
+
+        <RollingFile name="RollingFile" filename="${LOG_DIR}/server.log"
+                     filepattern="${LOG_DIR}/server-%d{yyyy-MM-dd}.log"
+                     append="false">
+            <PatternLayout pattern="${layout}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+
+    </Appenders>
+
+
+    <Loggers>
+
+        <Root level="ALL">
+            <AppenderRef ref="RollingFile" level="info"/>
+            <AppenderRef ref="Console" level="warn"/>
+        </Root>
+
+        <Logger name="server" level="info">
+            <AppenderRef ref="Console"/>
+        </Logger>
+    </Loggers>
+</Configuration>

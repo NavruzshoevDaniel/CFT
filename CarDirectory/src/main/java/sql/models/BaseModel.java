@@ -1,15 +1,20 @@
-package sql.model;
+package sql.models;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+@MappedSuperclass
 public abstract class BaseModel {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     protected long id;
 
     public long getId() {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public BaseModel() {
     }
@@ -27,4 +32,7 @@ public abstract class BaseModel {
         return id == baseModel.id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
 }

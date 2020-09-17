@@ -1,9 +1,11 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sql.model.car.Car;
-import sql.repository.tables.Cars;
+import sql.models.car.Car;
+import sql.service.CarService;
+import sql.util.factory.HibernateSessionFactory;
 
-import java.sql.SQLException;
+import java.util.List;
+import java.util.function.Consumer;
 
 
 public class Main {
@@ -13,20 +15,11 @@ public class Main {
 
     public static void main(String[] args) {
 
+        CarService carService = new CarService();
 
-        try {
-            Class.forName(DB_Driver);
-            Cars cars = new Cars("cars", DB_URL);
-            cars.createTable();
-            cars.add(new Car(2000, "X6", "BMW", "SUV"));
-            cars.remove(1);
-            System.out.println( cars.getAllInList());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
+        List<Car> cars = carService.getAll();
+        cars.stream().forEach(System.out::println);
+        //carService.add(car);
 
     }
 }

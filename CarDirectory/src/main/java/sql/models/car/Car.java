@@ -1,13 +1,22 @@
-package sql.model.car;
+package sql.models.car;
 
-import sql.model.BaseModel;
+import sql.models.BaseModel;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "cars")
 public class Car extends BaseModel {
 
     private int year;
     private String model;
     private String producer;
     private String body;
+
+    public Car() {
+
+    }
 
     public Car(int year, String model, String producer, String body) {
         this.year = year;
@@ -16,13 +25,6 @@ public class Car extends BaseModel {
         this.body = body;
     }
 
-    public Car(long id, int year, String model, String producer, String body) {
-        super(id);
-        this.year = year;
-        this.model = model;
-        this.producer = producer;
-        this.body = body;
-    }
 
     public int getYear() {
         return year;
@@ -56,4 +58,15 @@ public class Car extends BaseModel {
         this.body = body;
     }
 
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "year=" + year +
+                ", model='" + model + '\'' +
+                ", producer='" + producer + '\'' +
+                ", body='" + body + '\'' +
+                ", id=" + id +
+                "} " + super.toString();
+    }
 }

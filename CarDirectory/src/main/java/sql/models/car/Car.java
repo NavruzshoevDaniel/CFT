@@ -4,6 +4,9 @@ import sql.models.BaseModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "cars")

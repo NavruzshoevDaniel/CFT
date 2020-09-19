@@ -15,4 +15,5 @@ public interface Repository<T> {
 
     List<T> getAll();
 
+    List<String> getAllColumnNames();
 }

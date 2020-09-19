@@ -4,7 +4,6 @@ package sql.util.factory;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import sql.models.BaseModel;
 import sql.models.car.Car;
 
 public class HibernateSessionFactory {
@@ -29,8 +28,6 @@ public class HibernateSessionFactory {
     }
 
     private static void addAnnotations(Configuration configuration) {
-        configuration.addAnnotatedClass(BaseModel.class);
         configuration.addAnnotatedClass(Car.class);
-
     }
 }

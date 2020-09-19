@@ -1,10 +1,16 @@
 package mvc.controllers;
 
-public interface Controller {
+import mvc.models.ModelState;
 
-    void remove();
+public interface Controller<T> {
 
-    void add();
+    void view();
 
-    void edit();
+    void remove(long id);
+
+    void add(T obj);
+
+    void edit(T obj);
+
+    void setState(ModelState state);
 }

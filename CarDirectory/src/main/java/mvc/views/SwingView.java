@@ -3,30 +3,35 @@ package mvc.views;
 import mvc.EventListener;
 import mvc.controllers.SwingController;
 import mvc.models.CarModel;
+import mvc.models.ModelState;
+import mvc.models.Row;
+import mvc.views.gui.CarFrame;
+import mvc.views.gui.CarsTable;
+import mvc.views.gui.EditableTableModel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sql.models.car.Car;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import java.awt.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class SwingView implements EventListener {
-    private static final Logger logger = Logger.getLogger(SwingView.class.getName());
-    private String title = "Car Directory";
-    private int frameWidth;
-    private int frameHeight;
+    private static final Logger LOGGER = LogManager.getLogger(SwingView.class.getName());
 
     private CarModel carModel;
     private SwingController controller;
 
-    private JFrame appFrame;
+    private CarFrame appFrame;
     private JButton addButton;
     private JButton removeButton;
-    private JButton editButton;
+    private int countButtons = 2;
     private JPanel mainPanel;
     private JPanel buttonsPanel;
-    private JTable table;
-    public DefaultListModel<String> listModel;
+    private CarsTable carsTable;
+    public EditableTableModel tableModel;
 
 
     public SwingView(CarModel carModel, SwingController controller) {
@@ -37,73 +42,85 @@ public class SwingView implements EventListener {
 
     public void createView() {
         EventQueue.invokeLater(() -> {
-            logger.log(Level.INFO, "Start createView");
+            LOGGER.info("Start createView");
             setSwingSettings();
-            logger.log(Level.INFO, "Finish createView");
+            LOGGER.info("Finish createView");
         });
     }
 
     private void setSwingSettings() {
-        createFrame();
-        createButtonsPanel();
-        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
-        createList();
-        //mainPanel.add(cars, BorderLayout.CENTER);
-        appFrame.setVisible(true);
-    }
-
-    private void createFrame() {
-        appFrame = new JFrame(title);
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        frameWidth = dimension.width / 3;
-        frameHeight = (dimension.height / 5) * 2;
-        appFrame.setSize(frameWidth, frameHeight);
-        appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setLocationRelativeTo(null);
+        appFrame = new CarFrame();
         mainPanel = new JPanel(new BorderLayout());
         appFrame.getContentPane().add(mainPanel);
+        createButtonsPanel();
+        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
+        tableModel = new EditableTableModel();
+        tableModel.setColumnEditable(0, false);
+        carsTable = new CarsTable(tableModel);
+
+        JScrollPane scrollTable = new JScrollPane(carsTable,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        mainPanel.add(scrollTable, BorderLayout.CENTER);
+        appFrame.setVisible(true);
+        addActionListeners();
     }
 
     private void createButtonsPanel() {
-        buttonsPanel = new JPanel(new GridLayout(0, 3, 5, 5));
+        buttonsPanel = new JPanel(new GridLayout(0, countButtons, 5, 5));
 
         addButton = new JButton("Add");
         removeButton = new JButton("Remove");
-        editButton = new JButton("Edit");
-        addActionListeners();
 
         buttonsPanel.add(addButton);
         buttonsPanel.add(removeButton);
-        buttonsPanel.add(editButton);
     }
 
     private void addActionListeners() {
-        addButton.addActionListener(e -> controller.add());
-        removeButton.addActionListener(e -> controller.remove());
-        editButton.addActionListener(e -> controller.edit());
+        // addButton.addActionListener(e -> ));
+        // removeButton.addActionListener(e -> controller.remove());
+        tableModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                if (carModel.getState() != ModelState.VIEWING) {
+                    int row = e.getFirstRow();
+                    Car editCar = new Car();
+                    int columnIter = 0;
+                    for (String columnName : carModel.getTableColumnNames()) {
+                        Object value = tableModel.getValueAt(row, columnIter);
+                        columnIter+=1;
+                        editCar.getConsumer(columnName).accept(value);
+                    }
+                    controller.edit(editCar);
+                }
+            }
+        });
     }
 
-    private void createList() {
-        listModel = new DefaultListModel<>();
-        table = new JTable();
-    }
 
     @Override
     public void update() {
-        switch (carModel.getState()) {
 
-            case LOADING_FROM_DATABASE -> {
-                for (Car car : carModel.getCars()) {
-                    //cars.add
+        EventQueue.invokeLater(() -> {
+            switch (carModel.getState()) {
+
+                case VIEWING -> {
+                    configureTable();
                 }
             }
-            case ADDING_TO_DATABASE -> {
-            }
-            case REMOVING_FROM_DATABASE -> {
-            }
-            case EDITING_CAR_FROM_DATABASE -> {
-            }
+        });
+
+    }
+
+    private void configureTable() {
+        for (String columnName : carModel.getTableColumnNames()) {
+            tableModel.addColumn(columnName);
         }
+        for (Row row : carModel.getRows()) {
+            tableModel.addRow(row.toArray());
+        }
+        controller.setState(ModelState.WAITING);
+        carsTable.updateUI();
     }
 
 }

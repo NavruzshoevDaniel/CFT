@@ -36,4 +36,9 @@ public class CarService implements Service<Car> {
     public List<Car> getAll() {
         return carRepository.getAll();
     }
+
+    @Override
+    public List<String> getAllColumnNames() {
+        return carRepository.getAllColumnNames();
+    }
 }

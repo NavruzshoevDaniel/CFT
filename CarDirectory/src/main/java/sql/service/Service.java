@@ -13,4 +13,6 @@ public interface Service<T> {
     void update(T obj);
 
     List<T> getAll();
+
+    List<String> getAllColumnNames();
 }

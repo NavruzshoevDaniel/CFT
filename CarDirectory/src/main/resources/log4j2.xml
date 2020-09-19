@@ -28,7 +28,7 @@
 
         <Root level="ALL">
             <AppenderRef ref="RollingFile" level="info"/>
-            <AppenderRef ref="Console" level="warn"/>
+            <AppenderRef ref="Console" level="info"/>
         </Root>
 
         <Logger name="server" level="info">

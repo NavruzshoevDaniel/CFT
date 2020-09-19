@@ -5,11 +5,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
 import sql.models.car.Car;
 import sql.repository.Repository;
 import sql.util.factory.HibernateSessionFactory;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -60,5 +64,21 @@ public class CarRepository implements Repository<Car> {
                 .list();
         return cars;
     }
+
+    @Override
+    public List<String> getAllColumnNames() {
+        MetamodelImplementor metamodel = (MetamodelImplementor) HibernateSessionFactory
+                .getSessionFactory()
+                .getMetamodel();
+        ClassMetadata classMetadata = (ClassMetadata) metamodel.entityPersister(Car.class);
+        List<String> columnsNames = new ArrayList<>();
+        String id = classMetadata.getIdentifierPropertyName();
+        if (id != null) {
+            columnsNames.add(id);
+        }
+        columnsNames.addAll(Arrays.asList(classMetadata.getPropertyNames()));
+        return columnsNames;
+    }
+
 }
 

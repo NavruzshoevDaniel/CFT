@@ -47,7 +47,7 @@ public class CarModel implements Observable {
         carService.add(car);
     }
 
-    public Car getById(int id){
+    public Car getById(long id){
         return carService.getById(id);
     }
 

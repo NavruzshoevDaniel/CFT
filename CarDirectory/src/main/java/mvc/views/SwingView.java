@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.TypeMismatchException;
 import sql.models.car.Car;
+import sql.models.car.exceptions.YearException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,6 +100,10 @@ public class SwingView implements EventListener {
                         "You should enter all fields and correct input type",
                         "Inane warning",
                         JOptionPane.WARNING_MESSAGE);
+            } catch (YearException ex) {
+                JOptionPane.showMessageDialog(appFrame, ex.getMessage(),
+                        "Inane warning",
+                        JOptionPane.WARNING_MESSAGE);
             }
             carModel.setState(ModelState.WAITING);
         });
@@ -115,6 +120,7 @@ public class SwingView implements EventListener {
 
         });
         tableModel.addTableModelListener(e -> {
+            LOGGER.info(carModel.getState());
             if (carModel.getState() == ModelState.WAITING) {
                 int row = e.getFirstRow();
                 int col = e.getColumn();
@@ -128,11 +134,23 @@ public class SwingView implements EventListener {
                             "Inane warning",
                             JOptionPane.WARNING_MESSAGE);
                     LOGGER.warn(ex);
-                    throw ex;
+                    rollbackCell(row, col);
+                } catch (YearException ex) {
+                    JOptionPane.showMessageDialog(appFrame, ex.getMessage(),
+                            "Inane warning",
+                            JOptionPane.WARNING_MESSAGE);
+                    rollbackCell(row, col);
                 }
-
+                controller.setState(ModelState.WAITING);
             }
         });
+    }
+
+    private void rollbackCell(int row, int column) {
+        String name = tableModel.getColumnName(column);
+        Long id = (Long) tableModel.getValueAt(row, 0);
+        Car car = carModel.getById(id);
+        tableModel.setValueAt(car.getGetter(name).get(), row, column);
     }
 
     @Override

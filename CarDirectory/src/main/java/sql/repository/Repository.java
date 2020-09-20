@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface Repository<T> {
 
-    T getById(int id);
+    T getById(long id);
 
     void add(T obj);
 

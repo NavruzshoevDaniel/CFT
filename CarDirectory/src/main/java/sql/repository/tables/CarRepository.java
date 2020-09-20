@@ -22,7 +22,7 @@ public class CarRepository implements Repository<Car> {
 
 
     @Override
-    public Car getById(int id) {
+    public Car getById(long id) {
         return HibernateSessionFactory.getSessionFactory().openSession().get(Car.class, id);
     }
 

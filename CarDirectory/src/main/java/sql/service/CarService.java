@@ -13,7 +13,7 @@ public class CarService implements Service<Car> {
 
 
     @Override
-    public Car getById(int id) {
+    public Car getById(long id) {
         return carRepository.getById(id);
     }
 

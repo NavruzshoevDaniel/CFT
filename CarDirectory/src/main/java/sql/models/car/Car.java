@@ -1,5 +1,7 @@
 package sql.models.car;
 
+import sql.models.car.exceptions.YearException;
+
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,10 +42,9 @@ public class Car {
     private void initSetters() {
         columnsSetter.put("id", o -> setId((Long) o));
         columnsSetter.put("year", o -> {
-            if(o instanceof String){
+            if (o instanceof String) {
                 setYear(Integer.parseInt((String) o));
-            }
-            else {
+            } else {
                 setYear((Integer) o);
             }
         });
@@ -64,8 +65,12 @@ public class Car {
         return year;
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public void setYear(int year) throws YearException {
+        if (year >= 1900 && year <= 2025) {
+            this.year = year;
+        } else {
+            throw new YearException("The year must be from 1900 to 2025");
+        }
     }
 
     public String getModel() {

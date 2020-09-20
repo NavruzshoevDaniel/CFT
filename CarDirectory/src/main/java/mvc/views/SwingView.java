@@ -8,6 +8,7 @@ import mvc.models.Row;
 import mvc.views.gui.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.TypeMismatchException;
 import sql.models.car.Car;
 
 import javax.swing.*;
@@ -80,45 +81,59 @@ public class SwingView implements EventListener {
     private void addActionListeners() {
         addButton.addActionListener(e -> {
             Car newCar = new Car();
-            for (String columnName : carModel.getTableColumnNames()) {
-                if (!columnName.equals("id")) {
-                    String value = addingFieldsPanel.getField(columnName).getText();
-                    newCar.getSetter(columnName).accept(value);
+            try {
+                for (String columnName : carModel.getTableColumnNames()) {
+                    if (!columnName.equals("id")) {
+                        String value = addingFieldsPanel.getField(columnName).getText();
+                        newCar.getSetter(columnName).accept(value);
+                    }
                 }
+                carModel.addCar(newCar);
+                Row row = new Row();
+                for (String columnName : carModel.getTableColumnNames()) {
+                    row.add(newCar.getGetter(columnName).get());
+                }
+                tableModel.addRow(row.toArray());
+            } catch (NumberFormatException | ClassCastException ex) {
+                JOptionPane.showMessageDialog(appFrame,
+                        "You should enter all fields and correct input type",
+                        "Inane warning",
+                        JOptionPane.WARNING_MESSAGE);
             }
-            carModel.addCar(newCar);
-            Row row = new Row();
-            for (String columnName : carModel.getTableColumnNames()) {
-                row.add(newCar.getGetter(columnName).get());
-            }
-            tableModel.addRow(row.toArray());
-
+            carModel.setState(ModelState.WAITING);
         });
         removeButton.addActionListener(e -> {
             int[] selectedRows = carsTable.getSelectedRows();
             int firstRow = selectedRows[0];
             for (int row : selectedRows) {
-                LOGGER.warn(row);
                 Car car = getCarRow(firstRow);
                 controller.remove(car);
                 tableModel.removeRow(firstRow);
                 LOGGER.info(car + " has just removed");
             }
-
+            controller.setState(ModelState.WAITING);
 
         });
         tableModel.addTableModelListener(e -> {
-            if (carModel.getState() != ModelState.VIEWING &&
-                    carModel.getState() != ModelState.REMOVING_FROM_DATABASE &&
-                    carModel.getState() != ModelState.WAITING) {
+            if (carModel.getState() == ModelState.WAITING) {
                 int row = e.getFirstRow();
-                Car car = getCarRow(row);
-                controller.edit(car);
-                LOGGER.info(car + " has just edited");
+                int col = e.getColumn();
+                try {
+                    Car car = getCarRow(row);
+                    controller.edit(car);
+                    LOGGER.info(car + " has just edited");
+                } catch (NumberFormatException | ClassCastException
+                        | TypeMismatchException ex) {
+                    JOptionPane.showMessageDialog(appFrame, "Wrong type Input",
+                            "Inane warning",
+                            JOptionPane.WARNING_MESSAGE);
+                    LOGGER.warn(ex);
+                    throw ex;
+                }
+
             }
         });
     }
-
 
     @Override
     public void update() {
@@ -131,7 +146,7 @@ public class SwingView implements EventListener {
                     configureFields();
                     addActionListeners();
                     bottomPanel.add(buttonsPanel);
-
+                    controller.setState(ModelState.WAITING);
                 }
             }
         });

@@ -18,7 +18,7 @@ public class CarModel implements Observable {
     private static final Logger LOGGER = LogManager.getLogger(SwingView.class.getName());
 
     private Map<String, List<EventListener>> carObservers = new HashMap<>();
-    private Map<Long, Car> cars;
+
     private List<String> tableColumnNames;
     private List<Row> rows= new ArrayList<>();
     private CarService carService = new CarService();
@@ -30,8 +30,6 @@ public class CarModel implements Observable {
     public void init() {
         setState(ModelState.INITING);
         LOGGER.info("Started init");
-        cars = carService.getAll().stream()
-                .collect(Collectors.toMap(Car::getId, car -> car));
         tableColumnNames = carService.getAllColumnNames();
 
         loadRows();
@@ -47,19 +45,20 @@ public class CarModel implements Observable {
     public void addCar(Car car) {
         setState(ModelState.ADDING_TO_DATABASE);
         carService.add(car);
-        setState(ModelState.WAITING);
+    }
+
+    public Car getById(int id){
+        return carService.getById(id);
     }
 
     public void updateCar(Car car) {
         setState(ModelState.EDITING_CAR_FROM_DATABASE);
         carService.update(car);
-        setState(ModelState.WAITING);
     }
 
     public void removeCar(Car car){
         setState(ModelState.REMOVING_FROM_DATABASE);
         carService.remove(car);
-        setState(ModelState.WAITING);
     }
 
     @Override
@@ -97,7 +96,7 @@ public class CarModel implements Observable {
     }
 
     public Car[] getCars() {
-        return cars.values().toArray(new Car[0]);
+        return carService.getAll().toArray(new Car[0]);
     }
 
     public List<String> getTableColumnNames() {

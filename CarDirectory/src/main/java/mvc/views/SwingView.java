@@ -5,17 +5,14 @@ import mvc.controllers.SwingController;
 import mvc.models.CarModel;
 import mvc.models.ModelState;
 import mvc.models.Row;
-import mvc.views.gui.CarFrame;
-import mvc.views.gui.CarsTable;
-import mvc.views.gui.EditableTableModel;
+import mvc.views.gui.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sql.models.car.Car;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.*;
+import java.util.*;
 
 
 public class SwingView implements EventListener {
@@ -29,9 +26,11 @@ public class SwingView implements EventListener {
     private JButton removeButton;
     private int countButtons = 2;
     private JPanel mainPanel;
+    private JPanel bottomPanel;
     private JPanel buttonsPanel;
     private CarsTable carsTable;
     public EditableTableModel tableModel;
+    public AddingFieldsPanel<HintTextField> addingFieldsPanel;
 
 
     public SwingView(CarModel carModel, SwingController controller) {
@@ -53,7 +52,10 @@ public class SwingView implements EventListener {
         mainPanel = new JPanel(new BorderLayout());
         appFrame.getContentPane().add(mainPanel);
         createButtonsPanel();
-        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
+
+        bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
         tableModel = new EditableTableModel();
         tableModel.setColumnEditable(0, false);
         carsTable = new CarsTable(tableModel);
@@ -63,7 +65,6 @@ public class SwingView implements EventListener {
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         mainPanel.add(scrollTable, BorderLayout.CENTER);
         appFrame.setVisible(true);
-        addActionListeners();
     }
 
     private void createButtonsPanel() {
@@ -77,22 +78,43 @@ public class SwingView implements EventListener {
     }
 
     private void addActionListeners() {
-        // addButton.addActionListener(e -> ));
-        // removeButton.addActionListener(e -> controller.remove());
-        tableModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                if (carModel.getState() != ModelState.VIEWING) {
-                    int row = e.getFirstRow();
-                    Car editCar = new Car();
-                    int columnIter = 0;
-                    for (String columnName : carModel.getTableColumnNames()) {
-                        Object value = tableModel.getValueAt(row, columnIter);
-                        columnIter+=1;
-                        editCar.getConsumer(columnName).accept(value);
-                    }
-                    controller.edit(editCar);
+        addButton.addActionListener(e -> {
+            Car newCar = new Car();
+            for (String columnName : carModel.getTableColumnNames()) {
+                if (!columnName.equals("id")) {
+                    String value = addingFieldsPanel.getField(columnName).getText();
+                    newCar.getSetter(columnName).accept(value);
                 }
+            }
+            carModel.addCar(newCar);
+            Row row = new Row();
+            for (String columnName : carModel.getTableColumnNames()) {
+                row.add(newCar.getGetter(columnName).get());
+            }
+            tableModel.addRow(row.toArray());
+
+        });
+        removeButton.addActionListener(e -> {
+            int[] selectedRows = carsTable.getSelectedRows();
+            int firstRow = selectedRows[0];
+            for (int row : selectedRows) {
+                LOGGER.warn(row);
+                Car car = getCarRow(firstRow);
+                controller.remove(car);
+                tableModel.removeRow(firstRow);
+                LOGGER.info(car + " has just removed");
+            }
+
+
+        });
+        tableModel.addTableModelListener(e -> {
+            if (carModel.getState() != ModelState.VIEWING &&
+                    carModel.getState() != ModelState.REMOVING_FROM_DATABASE &&
+                    carModel.getState() != ModelState.WAITING) {
+                int row = e.getFirstRow();
+                Car car = getCarRow(row);
+                controller.edit(car);
+                LOGGER.info(car + " has just edited");
             }
         });
     }
@@ -106,6 +128,10 @@ public class SwingView implements EventListener {
 
                 case VIEWING -> {
                     configureTable();
+                    configureFields();
+                    addActionListeners();
+                    bottomPanel.add(buttonsPanel);
+
                 }
             }
         });
@@ -121,6 +147,32 @@ public class SwingView implements EventListener {
         }
         controller.setState(ModelState.WAITING);
         carsTable.updateUI();
+    }
+
+    private void configureFields() {
+        Map<String, HintTextField> hintTextFieldHashMap = new LinkedHashMap<>();
+
+        for (String columnName : carModel.getTableColumnNames()) {
+            if (!columnName.equals("id")) {
+                hintTextFieldHashMap.put(columnName, new HintTextField(columnName));
+            }
+        }
+        addingFieldsPanel = new AddingFieldsPanel<>(
+                new GridLayout(0, hintTextFieldHashMap.size(), 5, 5),
+                hintTextFieldHashMap);
+        bottomPanel.remove(buttonsPanel);
+        bottomPanel.add(addingFieldsPanel);
+    }
+
+    public Car getCarRow(int row) {
+        Car rowCar = new Car();
+        int columnIter = 0;
+        for (String columnName : carModel.getTableColumnNames()) {
+            Object value = tableModel.getValueAt(row, columnIter);
+            columnIter += 1;
+            rowCar.getSetter(columnName).accept(value);
+        }
+        return rowCar;
     }
 
 }

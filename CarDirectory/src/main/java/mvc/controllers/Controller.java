@@ -6,7 +6,7 @@ public interface Controller<T> {
 
     void view();
 
-    void remove(long id);
+    void remove(T obj);
 
     void add(T obj);
 

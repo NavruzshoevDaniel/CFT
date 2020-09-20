@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 @Entity
 @Table(name = "cars")
@@ -38,7 +39,14 @@ public class Car {
 
     private void initSetters() {
         columnsSetter.put("id", o -> setId((Long) o));
-        columnsSetter.put("year", o -> setYear((Integer) o));
+        columnsSetter.put("year", o -> {
+            if(o instanceof String){
+                setYear(Integer.parseInt((String) o));
+            }
+            else {
+                setYear((Integer) o);
+            }
+        });
         columnsSetter.put("model", o -> setModel((String) o));
         columnsSetter.put("producer", o -> setProducer((String) o));
         columnsSetter.put("body", o -> setBody((String) o));
@@ -104,11 +112,11 @@ public class Car {
         this.id = id;
     }
 
-    public Consumer<Object> getConsumer(String columnName) {
+    public Consumer<Object> getSetter(String columnName) {
         return columnsSetter.get(columnName);
     }
 
-    public Supplier<Object> getSupplier(String columnName) {
+    public Supplier<Object> getGetter(String columnName) {
         return columnsGetter.get(columnName);
     }
 }

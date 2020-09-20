@@ -56,6 +56,12 @@ public class CarModel implements Observable {
         setState(ModelState.WAITING);
     }
 
+    public void removeCar(Car car){
+        setState(ModelState.REMOVING_FROM_DATABASE);
+        carService.remove(car);
+        setState(ModelState.WAITING);
+    }
+
     @Override
     public void registerObserver(String eventType, EventListener eventListener) {
         if (eventType == null || eventListener == null) {
@@ -106,7 +112,7 @@ public class CarModel implements Observable {
         for (Car car : getCars()) {
             Row row = new Row();
             for (String columnName : getTableColumnNames()) {
-                row.add(car.getSupplier(columnName).get());
+                row.add(car.getGetter(columnName).get());
             }
             rows.add(row);
         }

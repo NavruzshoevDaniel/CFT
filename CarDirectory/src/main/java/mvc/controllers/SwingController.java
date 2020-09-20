@@ -25,8 +25,8 @@ public class SwingController implements Controller<Car> {
     }
 
     @Override
-    public void remove(long id) {
-
+    public void remove(Car car) {
+        carModel.removeCar(car);
     }
 
     @Override

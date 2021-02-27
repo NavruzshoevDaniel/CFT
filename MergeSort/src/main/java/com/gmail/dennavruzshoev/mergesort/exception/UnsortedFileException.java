@@ -1,4 +1,4 @@
-package mergesort.exception;
+package com.gmail.dennavruzshoev.mergesort.exception;
 
 public class UnsortedFileException extends RuntimeException {
     public UnsortedFileException() {

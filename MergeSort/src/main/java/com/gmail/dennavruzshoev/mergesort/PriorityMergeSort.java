@@ -1,11 +1,12 @@
-package mergesort;
+package com.gmail.dennavruzshoev.mergesort;
 
-import mergesort.exception.UnsortedFileException;
-import mergesort.parser.StringParser;
+import com.gmail.dennavruzshoev.mergesort.exception.UnsortedFileException;
+import com.gmail.dennavruzshoev.mergesort.parser.StringParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import queue.PriorityHeap;
+import com.gmail.dennavruzshoev.queue.PriorityHeap;
+import com.gmail.dennavruzshoev.wrapper.IgnoringException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,24 +29,24 @@ public class PriorityMergeSort<T> extends AbstractMergeSort<T> {
     }
 
     @Override
-    protected Path mergeKFiles(List<BufferedReader> bufferedReaders, Path outputFilePath) throws IOException {
-        Path newPath = createFile(outputFilePath);
+    protected void mergeKFiles(List<BufferedReader> bufferedReaders, Path outputFilePath) throws IOException {
+        createFile(outputFilePath);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputFilePath)) {
             fillPriorityQueue(bufferedReaders);
             merge(bufferedReaders, writer);
-        } catch (IOException e) {
-            LOGGER.warn("Output file({}) problems", e);
-            throw e;
         }
-        return newPath;
     }
 
-    private Path createFile(Path outputFilePath) throws IOException {
+    private void createFile(Path outputFilePath) throws IOException {
         if (Files.deleteIfExists(outputFilePath)) {
             LOGGER.warn("File({}) was deleted because it had already existed", outputFilePath);
         }
-        return Files.createFile(outputFilePath);
+        Path parent = outputFilePath.getParent();
+        if (parent != null && !Files.exists(parent)) {
+            Files.createDirectories(outputFilePath.getParent());
+        }
+        Files.createFile(outputFilePath);
     }
 
     private void fillPriorityQueue(List<BufferedReader> bufferedReaders) {
@@ -57,9 +58,13 @@ public class PriorityMergeSort<T> extends AbstractMergeSort<T> {
                     T firstElement = stringParser.parse(reader.readLine());
                     priorityHeap.insert(new SortedContainer<>(firstElement,
                             reader, stringParser, comparator));
+                } else {
+                    reader.close();
+                    readerIterator.remove();
                 }
-            } catch (IOException exception) {
-                LOGGER.warn("File({}) was skipped", inputFilesMap.get(reader), exception);
+            } catch (IOException | IllegalArgumentException e) {
+                LOGGER.warn("File({}) was skipped", inputFilesMap.get(reader), e);
+                IgnoringException.ignore(reader::close);
                 readerIterator.remove();
             }
         }
@@ -78,7 +83,7 @@ public class PriorityMergeSort<T> extends AbstractMergeSort<T> {
                     continue;
                 }
                 sortedContainer.readLine();
-            } catch (IOException | UnsortedFileException e) {
+            } catch (IOException | UnsortedFileException | IllegalArgumentException e) {
                 LOGGER.warn("File({}) was skipped", inputFilesMap.get(sortedContainer.reader), e);
                 sortedContainer.reader.close();
                 bufferedReaders.remove(sortedContainer.reader);

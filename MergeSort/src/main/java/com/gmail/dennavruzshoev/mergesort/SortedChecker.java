@@ -1,4 +1,4 @@
-package mergesort;
+package com.gmail.dennavruzshoev.mergesort;
 
 import java.util.Comparator;
 

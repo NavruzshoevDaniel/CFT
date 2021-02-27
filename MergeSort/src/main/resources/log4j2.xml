@@ -3,7 +3,6 @@
 <Configuration>
     <Properties>
         <Property name="layout">%highlight{%d [%t] %-5level %C %M - %m%n}</Property>
-        <Property name="LOG_DIR">src/main/resources/</Property>
     </Properties>
 
     <Appenders>

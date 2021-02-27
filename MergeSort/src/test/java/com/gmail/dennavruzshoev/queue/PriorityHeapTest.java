@@ -1,4 +1,4 @@
-package queue;
+package com.gmail.dennavruzshoev.queue;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package mergesort.parser;
+package com.gmail.dennavruzshoev.mergesort.parser;
 
 @FunctionalInterface
 public interface StringParser<T> {

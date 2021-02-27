@@ -1,4 +1,4 @@
-package com.gmail.dennavruzshoev;
+package com.gmail.dennavruzshoev.parametrparser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

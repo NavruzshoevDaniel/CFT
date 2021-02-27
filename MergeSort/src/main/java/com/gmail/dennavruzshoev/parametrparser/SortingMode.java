@@ -1,4 +1,4 @@
-package com.gmail.dennavruzshoev;
+package com.gmail.dennavruzshoev.parametrparser;
 
 public enum SortingMode {
     NATURAL_ORDER,

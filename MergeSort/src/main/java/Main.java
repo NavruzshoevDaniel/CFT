@@ -1,5 +1,5 @@
-import com.gmail.dennavruzshoev.Parser;
-import com.gmail.dennavruzshoev.SortingMode;
+import com.gmail.dennavruzshoev.parametrparser.Parser;
+import com.gmail.dennavruzshoev.parametrparser.SortingMode;
 import com.gmail.dennavruzshoev.mergesort.IMergeSort;
 import com.gmail.dennavruzshoev.mergesort.PriorityMergeSort;
 import org.slf4j.Logger;

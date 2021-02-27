@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+    <Properties>
+        <Property name="layout">%highlight{%d [%t] %-5level %C %M - %m%n}</Property>
+        <Property name="LOG_DIR">src/main/resources/</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout pattern="${layout}"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="ALL">
+            <AppenderRef ref="Console" level="ALL"/>
+        </Root>
+    </Loggers>
+</Configuration>

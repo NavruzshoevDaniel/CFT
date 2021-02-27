@@ -8,9 +8,6 @@ import java.util.List;
 
 public interface IMergeSort {
 
-    void sortFiles(@NotNull List<InputStream> sortedStreams,
-                   String outputFileName) throws IOException;
-
-    Path mergeKFiles(@NotNull List<BufferedReader> bufferedReaders,
-                     String outputName) throws IOException;
+    void sortFiles(@NotNull List<Path> sortedFilePaths,
+                   @NotNull Path outputFilePath) throws IOException;
 }
